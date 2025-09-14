@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow - Gestión del Tiempo de Estudio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2575FC;
+            --primary-dark: #1a5fd0;
+            --accent: #FF7C35;
+            --light: #ffffff;
+            --dark: #2d3436;
+            --gray: #f8f9fa;
+            --gray-dark: #e9ecef;
+            --text: #2d3436;
+            --text-light: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--gray);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--light);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--primary);
+            color: var(--light);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+        
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        /* Navigation */
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            background: var(--light);
+            border-top: 1px solid var(--gray-dark);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-item {
+            padding: 12px 0;
+            text-align: center;
+            flex: 1;
+            color: var(--text-light);
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-item i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            padding-bottom: 70px; /* Space for navigation */
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        /* Dashboard */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .welcome-card h2 {
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-card h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        /* Pomodoro Timer */
+        .pomodoro-container {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .timer-display {
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 20px 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--light);
+        }
+        
+        .btn-secondary {
+            background: var(--gray-dark);
+            color: var(--text);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--light);
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: var(--light);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .timer-mode {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            padding: 8px 16px;
+            background: var(--gray);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .mode-btn:first-child {
+            border-radius: 50px 0 0 50px;
+        }
+        
+        .mode-btn:last-child {
+            border-radius: 0 50px 50px 0;
+        }
+        
+        .mode-btn.active {
+            background: var(--primary);
+            color: var(--light);
+        }
+        
+        .timer-settings {
+            margin-top: 20px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .setting-item label {
+            font-weight: 600;
+        }
+        
+        .setting-item input {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid var(--gray-dark);
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        /* Statistics */
+        .chart-container {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .chart-placeholder {
+            height: 200px;
+            background: var(--gray);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        
+        .stats-list {
+            list-style: none;
+        }
+        
+        .stats-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-dark);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stats-list li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Settings */
+        .settings-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .settings-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--gray-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-dark);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Profile */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light);
+            font-size: 32px;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+        
+        .profile-info h2 {
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 5px;
+        }
+        
+        .profile-info p {
+            color: var(--text-light);
+        }
+        
+        /* Achievements */
+        .badges-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .badge {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .badge i {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .badge h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .badge p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .timer-display {
+                font-size: 48px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>StudyFlow</h1>
+            <p>Gestión inteligente de tu tiempo de estudio</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div class="section active" id="dashboard">
+                <div class="welcome-card">
+                    <h2>¡Bienvenido de nuevo!</h2>
+                    <p>Hoy es un buen día para ser productivo</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="sessions-today">0</h3>
+                        <p>Sesiones hoy</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="total-time">0m</h3>
+                        <p>Tiempo estudiado</p>
+                    </div>
+                </div>
+                
+                <div class="pomodoro-container">
+                    <h2>Temporizador Pomodoro</h2>
+                    <div class="timer-mode">
+                        <button class="mode-btn active" data-mode="work">Trabajo</button>
+                        <button class="mode-btn" data-mode="break">Descanso</button>
+                    </div>
+                    <div class="timer-display" id="timer">25:00</div>
+                    <div class="timer-controls">
+                        <button class="btn btn-primary" id="startBtn">
+                            <i class="fas fa-play"></i> Iniciar
+                        </button>
+                        <button class="btn btn-secondary" id="pauseBtn" disabled>
+                            <i class="fas fa-pause"></i> Pausar
+                        </button>
+                        <button class="btn btn-secondary" id="resetBtn" disabled>
+                            <i class="fas fa-redo"></i> Reiniciar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Próxima sesión</h3>
+                    <p>Tu próxima sesión de estudio está programada para las <strong>16:00</strong></p>
+                </div>
+            </div>
+            
+            <!-- Statistics Section -->
+            <div class="section" id="statistics">
+                <div class="chart-container">
+                    <h2>Estadísticas de Productividad</h2>
+                    <div class="chart-placeholder">
+                        <p>Gráfico de rendimiento semanal</p>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Resumen de la semana</h3>
+                    <ul class="stats-list">
+                        <li>
+                            <span>Sesiones completadas</span>
+                            <strong>12</strong>
+                        </li>
+                        <li>
+                            <span>Tiempo total</span>
+                            <strong>5h 20m</strong>
+                        </li>
+                        <li>
+                            <span>Días activos</span>
+                            <strong>5/7</strong>
+                        </li>
+                        <li>
+                            <span>Nivel de enfoque</span>
+                            <strong>78%</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div class="section" id="settings">
+                <div class="settings-card">
+                    <h3>Configuración de la aplicación</h3>
+                    
+                    <div class="settings-item">
+                        <div>
+                            <strong>Notificaciones</strong>
+                            <p>Recordatorios de sesiones</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div>
+                            <strong>Modo concentración</strong>
+                            <p>Bloquear distracciones</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <div>
+                            <strong>Sonido al terminar</strong>
+                            <p>Reproducir sonido</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Configuración Pomodoro</h3>
+                    
+                    <div class="setting-item">
+                        <label for="workDuration">Duración trabajo (min):</label>
+                        <input type="number" id="workDuration" min="1" max="60" value="25">
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="breakDuration">Duración descanso (min):</label>
+                        <input type="number" id="breakDuration" min="1" max="30" value="5">
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="longBreakDuration">Descanso largo (min):</label>
+                        <input type="number" id="longBreakDuration" min="1" max="60" value="15">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Section -->
+            <div class="section" id="profile">
+                <div class="profile-header">
+                    <div class="profile-avatar">U</div>
+                    <div class="profile-info">
+                        <h2>Usuario StudyFlow</h2>
+                        <p>Miembro desde Ago 2025</p>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Información de cuenta</h3>
+                    
+                    <div class="settings-item">
+                        <span>Plan actual</span>
+                        <span class="badge" style="background: var(--primary); color: white; padding: 4px 8px; border-radius: 20px; font-size: 12px;">Gratuito</span>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <span>Sesiones este mes</span>
+                        <strong>24/∞</strong>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <span>Informes disponibles</span>
+                        <strong>3/5</strong>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Logros</h3>
+                    <p>Has desbloqueado 4 de 12 logros</p>
+                    
+                    <div class="badges-container">
+                        <div class="badge">
+                            <i class="fas fa-medal"></i>
+                            <h4>Primeros pasos</h4>
+                            <p>Completa 5 sesiones</p>
+                        </div>
+                        
+                        <div class="badge">
+                            <i class="fas fa-fire"></i>
+                            <h4>Consistencia</h4>
+                            <p>3 días seguidos</p>
+                        </div>
+                        
+                        <div class="badge">
+                            <i class="fas fa-clock"></i>
+                            <h4>Maratón</h4>
+                            <p>5h estudiadas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <div class="nav-item active" data-target="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Inicio</span>
+            </div>
+            <div class="nav-item" data-target="statistics">
+                <i class="fas fa-chart-line"></i>
+                <span>Estadísticas</span>
+            </div>
+            <div class="nav-item" data-target="settings">
+                <i class="fas fa-cog"></i>
+                <span>Configuración</span>
+            </div>
+            <div class="nav-item" data-target="profile">
+                <i class="fas fa-user"></i>
+                <span>Perfil</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let timer;
+        let timeLeft;
+        let isRunning = false;
+        let isWorkTime = true;
+        let sessionsCompleted = 0;
+        let totalTimeStudied = 0;
+        
+        // Elementos del DOM
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const workDurationInput = document.getElementById('workDuration');
+        const breakDurationInput = document.getElementById('breakDuration');
+        const longBreakDurationInput = document.getElementById('longBreakDuration');
+        const sessionsTodayElement = document.getElementById('sessions-today');
+        const totalTimeElement = document.getElementById('total-time');
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.section');
+        
+        // Inicializar el temporizador
+        function initializeTimer() {
+            const minutes = isWorkTime ? parseInt(workDurationInput.value) : parseInt(breakDurationInput.value);
+            timeLeft = minutes * 60;
+            updateDisplay();
+        }
+        
+        // Actualizar la visualización del temporizador
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Actualizar estadísticas
+            sessionsTodayElement.textContent = sessionsCompleted;
+            totalTimeElement.textContent = `${totalTimeStudied}m`;
+        }
+        
+        // Iniciar el temporizador
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                resetBtn.disabled = false;
+                
+                timer = setInterval(() => {
+                    timeLeft--;
+                    
+                    if (timeLeft < 0) {
+                        clearInterval(timer);
+                        
+                        // Reproducir sonido de alerta
+                        try {
+                            const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
+                            audio.play();
+                        } catch (e) {
+                            console.log("Audio no disponible");
+                        }
+                        
+                        if (isWorkTime) {
+                            sessionsCompleted++;
+                            totalTimeStudied += parseInt(workDurationInput.value);
+                            alert("¡Tiempo de trabajo completado! Toma un descanso.");
+                            isWorkTime = false;
+                            
+                            // Actualizar modo visualmente
+                            modeButtons[0].classList.remove('active');
+                            modeButtons[1].classList.add('active');
+                        } else {
+                            alert("¡Descanso completado! Volvamos al trabajo.");
+                            isWorkTime = true;
+                            
+                            // Actualizar modo visualmente
+                            modeButtons[1].classList.remove('active');
+                            modeButtons[0].classList.add('active');
+                        }
+                        
+                        initializeTimer();
+                        startTimer();
+                    } else {
+                        updateDisplay();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Pausar el temporizador
+        function pauseTimer() {
+            if (isRunning) {
+                clearInterval(timer);
+                isRunning = false;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        }
+        
+        // Reiniciar el temporizador
+        function resetTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resetBtn.disabled = true;
+            initializeTimer();
+        }
+        
+        // Cambiar navegación entre secciones
+        function changeSection(sectionId) {
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelector(`.nav-item[data-target="${sectionId}"]`).classList.add('active');
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        
+        workDurationInput.addEventListener('change', function() {
+            if (!isRunning && isWorkTime) {
+                initializeTimer();
+            }
+        });
+        
+        breakDurationInput.addEventListener('change', function() {
+            if (!isRunning && !isWorkTime) {
+                initializeTimer();
+            }
+        });
+        
+        modeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const mode = this.getAttribute('data-mode');
+                
+                modeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                isWorkTime = (mode === 'work');
+                resetTimer();
+            });
+        });
+        
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const target = this.getAttribute('data-target');
+                changeSection(target);
+            });
+        });
+        
+        // Inicializar al cargar la página
+        initializeTimer();
+        
+        // Simular datos de usuario
+        sessionsCompleted = 3;
+        totalTimeStudied = 75;
+        updateDisplay();
+    </script>
+</body>
+</html>
